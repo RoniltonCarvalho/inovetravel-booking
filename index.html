@@ -1,489 +1,98 @@
-
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>inovetravel - Busca de Voos e Hotéis</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Inovetravel - Busque Voos e Hotéis</title>
+  <meta name="description" content="Inovetravel - encontre passagens aéreas e hotéis priorizando o menor preço. Protótipo estilo Booking.">
+  
+  <!-- Open Graph (WhatsApp/Facebook) -->
+  <meta property="og:title" content="Inovetravel - Busque Voos e Hotéis">
+  <meta property="og:description" content="Encontre passagens aéreas e hotéis baratos com a Inovetravel.">
+  <meta property="og:image" content="https://inovetravel-booking.vercel.app/logo.svg">
+  <meta property="og:type" content="website">
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Inovetravel - Busque Voos e Hotéis">
+  <meta name="twitter:description" content="Passagens aéreas e hotéis baratos, estilo Booking.">
+  <meta name="twitter:image" content="https://inovetravel-booking.vercel.app/logo.svg">
+
+  <!-- Favicon -->
+  <link rel="icon" href="logo.svg" type="image/svg+xml">
+  
+  <!-- React e Tailwind via CDN -->
   <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/recharts@2.5.0/umd/Recharts.min.js"></script>
-  <script src="https://unpkg.com/@material-ui/core@4.12.4/umd/material-ui.development.js"></script>
-  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <style>
-    body { background: #F2F4F8; }
-    #app { min-height: 100vh; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <div id="app"></div>
-  <div id="error-container" style="display:none;color:orange;font-size:16px;margin:12px;min-height:120px;overflow-y:auto;border:1px solid orange;padding:10px;border-radius:8px;background-color:#ff96000d;"></div>
-  <script type="text/babel">
-    try {
-      const { useState, useMemo } = React;
+<body class="bg-gray-100 text-gray-900">
 
-      function App() {
-        // Tema Booking-like com acentos dourados
-        const COLORS = {
-          gold: "#C9A227",
-          goldDark: "#8A6F14",
-          text: "#1e2430",
-          subtext: "#55607a",
-          bg: "#F2F4F8",
-          card: "#FFFFFF",
-          border: "#E2E6EE",
-          link: "#003580",
-        };
+  <!-- Header -->
+  <header class="bg-yellow-500 shadow p-4 flex items-center justify-between">
+    <div class="flex items-center space-x-2">
+      <img src="logo.svg" alt="Inovetravel Logo" class="h-8">
+      <h1 class="text-xl font-bold">Inovetravel</h1>
+    </div>
+  </header>
 
-        const [tab, setTab] = useState("flights");
-        const [loading, setLoading] = useState(false);
-        const [results, setResults] = useState([]);
-        const [error, setError] = useState("");
+  <!-- Root Container (React render) -->
+  <main id="root" class="p-6"></main>
 
-        // Form states - Voos
-        const [from, setFrom] = useState("São Paulo (GRU)");
-        const [to, setTo] = useState("Lisboa (LIS)");
-        const [depart, setDepart] = useState(yyyyMMdd(7));
-        const [returnd, setReturnd] = useState(yyyyMMdd(14));
-        const [pax, setPax] = useState(1);
-        const [cabin, setCabin] = useState("Econômica");
+  <!-- React App -->
+  <script type="text/javascript">
+    const { useState } = React;
 
-        // Form states - Hotéis
-        const [dest, setDest] = useState("Lisboa, Portugal");
-        const [checkin, setCheckin] = useState(yyyyMMdd(7));
-        const [checkout, setCheckout] = useState(yyyyMMdd(14));
-        const [guests, setGuests] = useState(2);
-        const [rooms, setRooms] = useState(1);
+    function App() {
+      const [tab, setTab] = useState("flights");
 
-        function yyyyMMdd(offsetDays = 0) {
-          const d = new Date();
-          d.setDate(d.getDate() + offsetDays);
-          const yyyy = d.getFullYear();
-          const mm = String(d.getMonth() + 1).padStart(2, "0");
-          const dd = String(d.getDate()).padStart(2, "0");
-          return `${yyyy}-${mm}-${dd}`;
-        }
-
-        function swapAirports() {
-          const temp = from;
-          setFrom(to);
-          setTo(temp);
-        }
-
-        function search() {
-          setError("");
-          setLoading(true);
-          setTimeout(() => {
-            if (tab === "flights") {
-              const data = mockFlightResults({ from, to, depart, returnd, pax, cabin });
-              data.sort((a, b) => a.price - b.price); // Priorizar mais baratos
-              setResults(data);
-            } else {
-              const data = mockHotelResults({ dest, checkin, checkout, guests, rooms });
-              data.sort((a, b) => a.price - b.price); // Priorizar mais baratos
-              setResults(data);
-            }
-            setLoading(false);
-          }, 700);
-        }
-
-        function mockFlightResults({ from, to, depart, returnd, pax, cabin }) {
-          const airlines = ["Inove Air", "Golden Wings", "Atlântico Jet", "Lusitânia Fly"]; 
-          const durations = ["10h 45m", "11h 20m", "9h 55m", "12h 10m"]; 
-          return new Array(7).fill(0).map((_, i) => ({
-            id: `FL-${i + 1}`,
-            airline: airlines[i % airlines.length],
-            logo: `https://placehold.co/80x80/f9fafb/111?text=${encodeURIComponent(airlines[i % airlines.length].split(' ')[0])}`,
-            from,
-            to,
-            depart,
-            returnd,
-            times: `${String(7 + i).padStart(2, '0')}:2${i} → ${String(18 - (i%3)).padStart(2, '0')}:1${i}`,
-            duration: durations[i % durations.length],
-            stops: i % 3 === 0 ? 0 : (i % 2),
-            price: 2750 + (i * 140) - (i%2)*90,
-            cabin,
-            pax,
-            rating: (4.1 + (i % 3) * 0.2).toFixed(1),
-          }));
-        }
-
-        function mockHotelResults({ dest, checkin, checkout, guests, rooms }) {
-          const names = [
-            "Dourado Palace Hotel",
-            "Inove Boutique & Spa",
-            "Golden View Riverside",
-            "Atlântico Premium Suites",
-            "Aurora Grand Lisboa",
-            "Solar do Tejo",
-            "Riviera Gold"
-          ];
-          return new Array(8).fill(0).map((_, i) => ({
-            id: `HT-${i + 1}`,
-            name: names[i % names.length],
-            image: `https://placehold.co/640x400/ffffff/111?text=${encodeURIComponent(names[i % names.length])}`,
-            dest,
-            checkin,
-            checkout,
-            guests,
-            rooms,
-            stars: 3 + (i % 3),
-            price: 339 + i * 28 - (i%2)*17,
-            rating: (8.1 + (i % 4) * 0.4).toFixed(1),
-            perks: ["Café da manhã", "Cancelamento grátis", i % 2 ? "Wi‑Fi rápido" : "Piscina"],
-            location: i % 2 ? "Centro Histórico" : "Beira-rio",
-          }));
-        }
-
-        function Logo({ size = 28, withText = true }) {
-          return (
-            <div className="flex items-center space-x-2">
-              <svg width={size} height={size} viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="32" cy="32" r="30" stroke={COLORS.gold} strokeWidth="3" fill="#ffffff" />
-                <path d="M8 30 L50 16 L36 56 L30 38 L8 30 Z" fill={COLORS.gold} opacity="0.95" />
-                <path d="M30 38 L45 23" stroke="#ffffff" strokeWidth="3" />
-              </svg>
-              {withText && (
-                <div className="font-semibold tracking-wide" style={{ color: COLORS.text }}>
-                  inovetravel
-                </div>
-              )}
-            </div>
-          );
-        }
-
-        return (
-          <div className="min-h-screen" style={{ background: COLORS.bg, color: COLORS.text }}>
-            <Header COLORS={COLORS} />
-            <main className="max-w-6xl mx-auto px-4 sm:px-6">
-              <Hero COLORS={COLORS} />
-              <div className="-mt-16 relative z-10">
-                <div className="rounded-xl border shadow-md" style={{ background: COLORS.card, borderColor: COLORS.border }}>
-                  <div className="px-4 pt-4">
-                    <div className="flex space-x-2">
-                      <TabButton label="Voos" active={tab==='flights'} onClick={() => setTab('flights')} COLORS={COLORS} />
-                      <TabButton label="Hotéis" active={tab==='hotels'} onClick={() => setTab('hotels')} COLORS={COLORS} />
-                    </div>
-                  </div>
-                  <div className="p-4 sm:p-6">
-                    {tab === "flights" ? (
-                      <FlightForm {...{ from, setFrom, to, setTo, depart, setDepart, returnd, setReturnd, pax, setPax, cabin, setCabin, swapAirports, search, loading, COLORS }} />
-                    ) : (
-                      <HotelForm {...{ dest, setDest, checkin, setCheckin, checkout, setCheckout, guests, setGuests, rooms, setRooms, search, loading, COLORS }} />
-                    )}
-                  </div>
-                </div>
-              </div>
-              <Results {...{ tab, results, loading, error, COLORS }} />
-            </main>
-            <Footer COLORS={COLORS} />
+      return (
+        <div className="max-w-3xl mx-auto">
+          {/* Tabs */}
+          <div className="flex space-x-4 mb-6">
+            <button 
+              onClick={() => setTab("flights")} 
+              className={"px-4 py-2 rounded " + (tab === "flights" ? "bg-yellow-500 text-white" : "bg-gray-200")}
+            >
+              Voos
+            </button>
+            <button 
+              onClick={() => setTab("hotels")} 
+              className={"px-4 py-2 rounded " + (tab === "hotels" ? "bg-yellow-500 text-white" : "bg-gray-200")}
+            >
+              Hotéis
+            </button>
           </div>
-        );
-      }
 
-      function Header({ COLORS }) {
-        return (
-          <header style={{ background: COLORS.card, borderBottom: `1px solid ${COLORS.border}` }}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <Logo size={32} />
-              </div>
-              <nav className="hidden sm:flex items-center space-x-6 text-sm" style={{ color: COLORS.subtext }}>
-                <a href="#" style={{ color: COLORS.link }} className="hover:underline">Ofertas</a>
-                <a href="#" className="hover:underline">Ajuda</a>
-                <a href="#" className="hover:underline">Minhas Reservas</a>
-                <button className="px-3 py-1 rounded-md border" style={{ borderColor: COLORS.border, color: COLORS.text }}>Entrar</button>
-              </nav>
-            </div>
-          </header>
-        );
-      }
-
-      function Hero({ COLORS }) {
-        return (
-          <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-10 pb-20">
+          {/* Conteúdo */}
+          {tab === "flights" ? (
             <div>
-              <h1 className="text-3xl sm:text-4xl font-bold leading-tight">
-                Encontre ofertas de voos e hotéis
-              </h1>
-              <p className="mt-2 text-sm sm:text-base" style={{ color: COLORS.subtext }}>
-                Compare preços e garanta as melhores tarifas. Resultados priorizados pelos mais baratos.
-              </p>
-            </div>
-          </section>
-        );
-      }
-
-      function TabButton({ label, active, onClick, COLORS }) {
-        return (
-          <button onClick={onClick} className="px-4 py-2 rounded-t-md font-medium" style={{ background: active ? COLORS.gold : 'transparent', color: active ? '#111' : COLORS.subtext }}>
-            {label}
-          </button>
-        );
-      }
-
-      function Field({ label, children }) {
-        return (
-          <div className="flex flex-col">
-            <span className="text-xs mb-1" style={{ color: '#6b7280' }}>{label}</span>
-            {children}
-          </div>
-        );
-      }
-
-      function Input({ value, onChange, placeholder, type = "text" }) {
-        return (
-          <input
-            type={type}
-            value={value}
-            onChange={(e) => onChange(type === 'number' ? Number(e.target.value) : e.target.value)}
-            placeholder={placeholder}
-            className="px-3 py-2 rounded-md border focus:outline-none focus:ring-2"
-            style={{ borderColor: '#CBD5E1', color: '#111827', background: '#ffffff' }}
-          />
-        );
-      }
-
-      function Select({ value, onChange, options = [] }) {
-        return (
-          <select value={value} onChange={(e) => onChange(e.target.value)} className="px-3 py-2 rounded-md border focus:outline-none" style={{ borderColor: '#CBD5E1', color: '#111827', background: '#ffffff' }}>
-            {options.map((o) => (
-              <option key={o} value={o}>{o}</option>
-            ))}
-          </select>
-        );
-      }
-
-      function FlightForm(props) {
-        const { from, setFrom, to, setTo, depart, setDepart, returnd, setReturnd, pax, setPax, cabin, setCabin, swapAirports, search, loading, COLORS } = props;
-        return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-              <div className="md:col-span-4"><Field label="Origem"><Input value={from} onChange={setFrom} /></Field></div>
-              <div className="md:col-span-1 flex items-end justify-center">
-                <button onClick={swapAirports} className="w-full md:w-auto h-10 px-3 rounded-md border" title="Trocar" style={{ borderColor: COLORS.border, color: COLORS.text, background: '#fff' }}>
-                  <i className="fa-solid fa-right-left"></i>
-                </button>
+              <h2 className="text-lg font-bold mb-2">Resultados de Voos</h2>
+              <div className="bg-white p-4 shadow rounded mb-2">
+                <p><strong>São Paulo → Rio</strong></p>
+                <p>Preço: R$ 299</p>
               </div>
-              <div className="md:col-span-4"><Field label="Destino"><Input value={to} onChange={setTo} /></Field></div>
-              <div className="md:col-span-3 grid grid-cols-2 gap-3">
-                <Field label="Ida"><Input type="date" value={depart} onChange={setDepart} /></Field>
-                <Field label="Volta"><Input type="date" value={returnd} onChange={setReturnd} /></Field>
+              <div className="bg-white p-4 shadow rounded">
+                <p><strong>São Paulo → Brasília</strong></p>
+                <p>Preço: R$ 350</p>
               </div>
             </div>
-
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <Field label="Passageiros"><Input type="number" value={pax} onChange={setPax} /></Field>
-              <Field label="Classe">
-                <Select value={cabin} onChange={setCabin} options={["Econômica", "Premium", "Executiva", "Primeira"]} />
-              </Field>
-              <div className="md:col-span-2 flex items-end">
-                <button onClick={search} disabled={loading} className="w-full py-3 rounded-md font-semibold flex items-center justify-center space-x-2" style={{ background: '#FFC107', color: '#111', opacity: loading ? 0.8 : 1 }}>
-                  <i className="fa-solid fa-magnifying-glass"></i>
-                  <span>{loading ? 'Buscando...' : 'Buscar voos'}</span>
-                </button>
+          ) : (
+            <div>
+              <h2 className="text-lg font-bold mb-2">Resultados de Hotéis</h2>
+              <div className="bg-white p-4 shadow rounded mb-2">
+                <p><strong>Hotel Copacabana</strong></p>
+                <p>Preço: R$ 420/noite</p>
+              </div>
+              <div className="bg-white p-4 shadow rounded">
+                <p><strong>Hotel Paulista</strong></p>
+                <p>Preço: R$ 350/noite</p>
               </div>
             </div>
-          </div>
-        );
-      }
-
-      function HotelForm(props) {
-        const { dest, setDest, checkin, setCheckin, checkout, setCheckout, guests, setGuests, rooms, setRooms, search, loading, COLORS } = props;
-        return (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-3">
-              <div className="md:col-span-5"><Field label="Destino"><Input value={dest} onChange={setDest} /></Field></div>
-              <div className="md:col-span-4 grid grid-cols-2 gap-3">
-                <Field label="Check-in"><Input type="date" value={checkin} onChange={setCheckin} /></Field>
-                <Field label="Check-out"><Input type="date" value={checkout} onChange={setCheckout} /></Field>
-              </div>
-              <div className="md:col-span-3 grid grid-cols-2 gap-3">
-                <Field label="Hóspedes"><Input type="number" value={guests} onChange={setGuests} /></Field>
-                <Field label="Quartos"><Input type="number" value={rooms} onChange={setRooms} /></Field>
-              </div>
-            </div>
-
-            <div className="flex items-end">
-              <button onClick={search} disabled={loading} className="w-full py-3 rounded-md font-semibold flex items-center justify-center space-x-2" style={{ background: '#FFC107', color: '#111', opacity: loading ? 0.8 : 1 }}>
-                <i className="fa-solid fa-magnifying-glass"></i>
-                <span>{loading ? 'Buscando...' : 'Buscar hotéis'}</span>
-              </button>
-            </div>
-          </div>
-        );
-      }
-
-      function Results({ tab, results, loading, error, COLORS }) {
-        return (
-          <section className="mt-8 mb-14">
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-xl font-semibold">{tab === 'flights' ? 'Resultados de voos' : 'Resultados de hotéis'}</h2>
-              {results.length > 0 && (
-                <div className="text-sm" style={{ color: COLORS.subtext }}>
-                  Ordenado por preço: mais barato primeiro
-                </div>
-              )}
-            </div>
-            {loading && (
-              <div className="p-6 rounded-lg border bg-white" style={{ borderColor: COLORS.border }}>
-                Carregando resultados...
-              </div>
-            )}
-            {!loading && error && (
-              <div className="p-4 rounded-lg border text-red-600 bg-white" style={{ borderColor: COLORS.border }}>{error}</div>
-            )}
-            {!loading && !error && results.length === 0 && (
-              <div className="p-6 rounded-lg border text-sm bg-white" style={{ borderColor: COLORS.border, color: COLORS.subtext }}>
-                Use o formulário acima para buscar ofertas.
-              </div>
-            )}
-
-            {!loading && results.length > 0 && (
-              <div className="space-y-3">
-                {tab === 'flights' ? (
-                  results.map((r) => <FlightCard key={r.id} r={r} COLORS={COLORS} />)
-                ) : (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {results.map((r) => <HotelCard key={r.id} r={r} COLORS={COLORS} />)}
-                  </div>
-                )}
-              </div>
-            )}
-          </section>
-        );
-      }
-
-      function Badge({ children, COLORS, kind = 'gold' }) {
-        const styles = kind === 'gold'
-          ? { borderColor: '#E6C75A', color: '#8A6F14', background: '#FFF8DB' }
-          : { borderColor: '#D1D5DB', color: '#374151', background: '#F9FAFB' };
-        return (
-          <span className="text-xs px-2 py-1 rounded-full border" style={styles}>
-            {children}
-          </span>
-        );
-      }
-
-      function FlightCard({ r, COLORS }) {
-        return (
-          <div className="p-4 rounded-lg border bg-white flex items-center justify-between gap-4" style={{ borderColor: COLORS.border }}>
-            <div className="flex items-center gap-4 min-w-0">
-              <img src={r.logo} alt={r.airline} className="w-14 h-14 rounded-md object-cover border" style={{ borderColor: COLORS.border }} />
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <div className="font-semibold truncate">{r.airline}</div>
-                  <Badge COLORS={COLORS} kind="gold">{r.stops === 0 ? 'Direto' : `${r.stops} escala`}</Badge>
-                </div>
-                <div className="text-sm" style={{ color: COLORS.subtext }}>{r.from} → {r.to}</div>
-                <div className="text-sm mt-1">{r.times} • {r.duration} • {r.cabin}</div>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-xs mb-1" style={{ color: COLORS.subtext }}>por pessoa</div>
-              <div className="text-2xl font-bold" style={{ color: COLORS.text }}>R$ {r.price.toLocaleString('pt-BR')}</div>
-              <button className="mt-2 px-4 py-2 rounded-md text-sm font-semibold" style={{ background: COLORS.gold, color: '#111' }}>Selecionar</button>
-            </div>
-          </div>
-        );
-      }
-
-      function HotelCard({ r, COLORS }) {
-        return (
-          <div className="rounded-lg overflow-hidden border bg-white" style={{ borderColor: COLORS.border }}>
-            <img src={r.image} alt={r.name} className="w-full h-44 object-cover" />
-            <div className="p-4">
-              <div className="flex items-start justify-between gap-2">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <div className="font-semibold text-lg">{r.name}</div>
-                    <div className="flex">
-                      {Array.from({ length: r.stars }).map((_, i) => (
-                        <i key={i} className="fa-solid fa-star" style={{ color: '#F59E0B' }}></i>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="text-sm" style={{ color: COLORS.subtext }}>{r.dest} • {r.location}</div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs" style={{ color: COLORS.subtext }}>nota</div>
-                  <div className="font-semibold">{r.rating}</div>
-                </div>
-              </div>
-              <div className="mt-2 flex flex-wrap gap-2">
-                {r.perks.map(p => <Badge key={p} COLORS={COLORS}>{p}</Badge>)}
-              </div>
-              <div className="mt-3 flex items-center justify-between">
-                <div className="text-sm" style={{ color: COLORS.subtext }}>
-                  {r.guests} hóspedes • {r.rooms} quarto(s)
-                </div>
-                <div className="text-right">
-                  <div className="text-xs mb-1" style={{ color: COLORS.subtext }}>por diária</div>
-                  <div className="text-xl font-bold" style={{ color: COLORS.text }}>R$ {r.price.toLocaleString('pt-BR')}</div>
-                  <button className="mt-2 px-4 py-2 rounded-md text-sm font-semibold" style={{ background: COLORS.gold, color: '#111' }}>Ver disponibilidade</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
-
-      function Footer({ COLORS }) {
-        return (
-          <footer className="mt-12" style={{ borderTop: `1px solid ${COLORS.border}` }}>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid grid-cols-1 sm:grid-cols-3 gap-6 text-sm" style={{ color: COLORS.subtext }}>
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <Logo size={22} />
-                </div>
-                <p>
-                  © {new Date().getFullYear()} inovetravel. Todos os direitos reservados.
-                </p>
-              </div>
-              <div>
-                <div className="font-semibold mb-2" style={{ color: COLORS.text }}>Empresa</div>
-                <ul className="space-y-1">
-                  <li><a href="#" className="hover:underline">Sobre</a></li>
-                  <li><a href="#" className="hover:underline">Carreiras</a></li>
-                  <li><a href="#" className="hover:underline">Imprensa</a></li>
-                </ul>
-              </div>
-              <div>
-                <div className="font-semibold mb-2" style={{ color: COLORS.text }}>Suporte</div>
-                <ul className="space-y-1">
-                  <li><a href="#" className="hover:underline">Central de ajuda</a></li>
-                  <li><a href="#" className="hover:underline">Política de cancelamento</a></li>
-                  <li><a href="#" className="hover:underline">Privacidade</a></li>
-                </ul>
-              </div>
-            </div>
-          </footer>
-        );
-      }
-
-      ReactDOM.render(<App />, document.getElementById('app'));
-    } catch (error) {
-      displayError('Ocorreu um erro ao carregar a aplicação.');
+          )}
+        </div>
+      );
     }
 
-    window.addEventListener('error', function(event) {
-      displayError(event.message, event.error && event.error.stack);
-    });
-
-    function displayError(message, stackInfo) {
-      const errorContainer = document.getElementById('error-container');
-      const errorMessage = document.createElement('div');
-      errorMessage.textContent = message;
-      errorContainer.appendChild(errorMessage);
-      if (stackInfo) {
-        const stackErrorMessage = document.createElement('pre');
-        stackErrorMessage.textContent = String(stackInfo).substring(0, 200);
-        errorContainer.appendChild(stackErrorMessage);
-      }
-      errorContainer.style.display = 'block';
-    }
-  </script>
-</body>
-</html>
+    ReactDOM.render(<App />, Generation cancelled
