@@ -1,98 +1,87 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  
-  <title>Inovetravel - Busque Voos e Hotéis</title>
-  <meta name="description" content="Inovetravel - encontre passagens aéreas e hotéis priorizando o menor preço. Protótipo estilo Booking.">
-  
-  <!-- Open Graph (WhatsApp/Facebook) -->
-  <meta property="og:title" content="Inovetravel - Busque Voos e Hotéis">
-  <meta property="og:description" content="Encontre passagens aéreas e hotéis baratos com a Inovetravel.">
-  <meta property="og:image" content="https://inovetravel-booking.vercel.app/logo.svg">
-  <meta property="og:type" content="website">
-  
-  <!-- Twitter Card -->
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="Inovetravel - Busque Voos e Hotéis">
-  <meta name="twitter:description" content="Passagens aéreas e hotéis baratos, estilo Booking.">
-  <meta name="twitter:image" content="https://inovetravel-booking.vercel.app/logo.svg">
-
-  <!-- Favicon -->
+  <title>Inovetravel - Busca de Voos e Hotéis</title>
   <link rel="icon" href="logo.svg" type="image/svg+xml">
-  
-  <!-- React e Tailwind via CDN -->
+
+  <!-- Tailwind via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React e ReactDOM via CDN (UMD) -->
   <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+
 </head>
-<body class="bg-gray-100 text-gray-900">
+<body class="bg-gray-100 text-gray-800">
 
-  <!-- Header -->
-  <header class="bg-yellow-500 shadow p-4 flex items-center justify-between">
-    <div class="flex items-center space-x-2">
-      <img src="logo.svg" alt="Inovetravel Logo" class="h-8">
-      <h1 class="text-xl font-bold">Inovetravel</h1>
-    </div>
-  </header>
+  <!-- Container principal -->
+  <div id="root"></div>
 
-  <!-- Root Container (React render) -->
-  <main id="root" class="p-6"></main>
-
-  <!-- React App -->
-  <script type="text/javascript">
-    const { useState } = React;
-
+  <!-- Script React -->
+  <script type="text/babel">
     function App() {
-      const [tab, setTab] = useState("flights");
+      const [tab, setTab] = React.useState("flights");
+
+      const flights = [
+        { companhia: "Latam", preco: 1200, origem: "São Paulo", destino: "Lisboa" },
+        { companhia: "TAP Portugal", preco: 950, origem: "São Paulo", destino: "Lisboa" }
+      ];
+
+      const hotels = [
+        { nome: "Hotel Azul", preco: 300, local: "Lisboa" },
+        { nome: "Hotel Dourado", preco: 250, local: "Lisboa" }
+      ];
 
       return (
-        <div className="max-w-3xl mx-auto">
-          {/* Tabs */}
-          <div className="flex space-x-4 mb-6">
-            <button 
-              onClick={() => setTab("flights")} 
-              className={"px-4 py-2 rounded " + (tab === "flights" ? "bg-yellow-500 text-white" : "bg-gray-200")}
-            >
+        <div className="p-6">
+          <header className="flex items-center space-x-2 mb-6">
+            <img src="logo.svg" alt="logo" className="w-8 h-8" />
+            <h1 className="text-2xl font-bold text-yellow-600">Inovetravel</h1>
+          </header>
+
+          <div className="flex space-x-4 mb-4">
+            <button onClick={() => setTab("flights")}
+              className={"px-4 py-2 rounded " + (tab === "flights" ? "bg-yellow-500 text-white" : "bg-gray-200")}>
               Voos
             </button>
-            <button 
-              onClick={() => setTab("hotels")} 
-              className={"px-4 py-2 rounded " + (tab === "hotels" ? "bg-yellow-500 text-white" : "bg-gray-200")}
-            >
+            <button onClick={() => setTab("hotels")}
+              className={"px-4 py-2 rounded " + (tab === "hotels" ? "bg-yellow-500 text-white" : "bg-gray-200")}>
               Hotéis
             </button>
           </div>
 
-          {/* Conteúdo */}
           {tab === "flights" ? (
-            <div>
-              <h2 className="text-lg font-bold mb-2">Resultados de Voos</h2>
-              <div className="bg-white p-4 shadow rounded mb-2">
-                <p><strong>São Paulo → Rio</strong></p>
-                <p>Preço: R$ 299</p>
-              </div>
-              <div className="bg-white p-4 shadow rounded">
-                <p><strong>São Paulo → Brasília</strong></p>
-                <p>Preço: R$ 350</p>
-              </div>
+            <div className="space-y-3">
+              {flights.sort((a,b)=> a.preco - b.preco).map((f, i) => (
+                <div key={i} className="bg-white shadow p-4 rounded">
+                  <p>{f.companhia}</p>
+                  <p><strong>R$ {f.preco}</strong></p>
+                  <p>{f.origem} → {f.destino}</p>
+                </div>
+              ))}
             </div>
           ) : (
-            <div>
-              <h2 className="text-lg font-bold mb-2">Resultados de Hotéis</h2>
-              <div className="bg-white p-4 shadow rounded mb-2">
-                <p><strong>Hotel Copacabana</strong></p>
-                <p>Preço: R$ 420/noite</p>
-              </div>
-              <div className="bg-white p-4 shadow rounded">
-                <p><strong>Hotel Paulista</strong></p>
-                <p>Preço: R$ 350/noite</p>
-              </div>
+            <div className="space-y-3">
+              {hotels.sort((a,b)=> a.preco - b.preco).map((h, i) => (
+                <div key={i} className="bg-white shadow p-4 rounded">
+                  <p>{h.nome}</p>
+                  <p><strong>R$ {h.preco}</strong> / noite</p>
+                  <p>{h.local}</p>
+                </div>
+              ))}
             </div>
           )}
         </div>
       );
     }
 
-    ReactDOM.render(<App />, Generation cancelled
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+
+  <!-- Babel CDN (para interpretar JSX diretamente no navegador) -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+</body>
+</html>
