@@ -1,21 +1,19 @@
+# 🌍 Inovetravel
 
-# inovetravel (protótipo Booking-like)
+Protótipo de site de busca de **Voos e Hotéis** inspirado no estilo do Booking.com, priorizando os resultados mais baratos.
 
-Protótipo estático com busca de Voos e Hotéis priorizando os mais baratos.
+🚀 Deploy online: [inovetravel-booking.vercel.app](https://inovetravel-booking.vercel.app)
 
-- Frontend: React (UMD) + Tailwind via CDN (single `index.html`)
-- Sem build step: basta abrir `index.html` no navegador ou publicar no GitHub Pages.
+---
 
-## Rodar localmente
-Abra o arquivo `index.html` no navegador.
+## ✨ Funcionalidades
 
-## Publicar no GitHub Pages
-1. Crie um repositório no GitHub (ex.: `inovetravel`).
-2. Envie os arquivos deste zip para a branch `main`.
-3. Em Settings → Pages, selecione `Deploy from a branch` e aponte para `main`/root.
-4. Acesse a URL exibida pelo GitHub Pages.
+- 🛫 Aba **Voos** com lista de passagens (ordenadas do menor preço para o maior).  
+- 🏨 Aba **Hotéis** com lista de hospedagens (também ordenadas por preço).  
+- 🎨 Interface moderna usando **TailwindCSS via CDN**.  
+- ⚛️ React rodando diretamente no navegador (sem build).  
+- 📱 Design responsivo, adaptado para uso em celulares.
 
-## Próximos passos
-- Conectar APIs reais (Amadeus/Duffel/Skyscanner para voos; Expedia/Booking/HotelBeds para hotéis).
-- Adicionar filtros (paradas, horários, políticas de cancelamento, avaliação, bairro etc.).
-- Implementar autenticação e checkout.
+---
+
+## 📂 Estrutura do projeto
